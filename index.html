@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html >
+<style>
+table, th , td  {
+  border: 1px solid grey;
+  border-collapse: collapse;
+  padding: 5px;
+}
+table tr:nth-child(odd) {
+  background-color: #f1f1f1;
+}
+table tr:nth-child(even) {
+  background-color: #ffffff;
+}
+</style>
+<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+<body>
+
+<div ng-app="studentApp" ng-controller="studentCtrl" ng-init="message=''" >
+<h5>{{message}}</h5>
+<table>
+  <tr>
+    <th>id</th>
+    <th>Name</th>
+    <th>Phone</th>
+    <th>Address</th>
+    <th>Action</th>
+  </tr>
+  <tr ng-repeat="x in students">
+    <td>{{ x.id }}</td>
+    <td>{{ x.name }}</td>
+    <td>{{ x.phone }}</td>
+    <td>{{ x.address }}</td>
+    <td><span ng-click="editStudent(x)" >Edit</span> | <span ng-click="deleteStudent(x)" >Delete</span> </td>
+  </tr>
+</table>
+
+<br>
+<form>
+  Student Name: <input type="text" ng-model="studentName" /><br>
+  Phone: <input type="text" ng-model="phone" /><br>
+  Address: <input type="text" ng-model="address" /><br>
+  <button ng-click="insertStudent()" > Submit </button>
+</form>
+
+</div>
+
+<script>
+var app = angular.module('studentApp', []);
+app.controller('studentCtrl', function($scope, $http) {
+   $scope.getStudents = function(){
+     $http.get("get_student.php")
+     .then(function (response) {$scope.students = response.data;});
+   }
+
+   $scope.insertStudent = function(){
+     $http.post("insert_student.php", {'studentName': $scope.studentName, 'phone': $scope.phone, 'address': $scope.address}).success(function(data, status, header, config){
+       $scope.getStudents();
+     })
+   }
+
+   $scope.editStudent = function(student){
+     $scope.studentName = student.name;
+     $scope.phone = student.phone;
+     $scope.address = student.address;
+   }
+   $scope.deleteStudent = function(student){
+     $scope.message = student.name + " is Deleting...";
+     $http.post("delete_student.php", {'id': student.id}).success(function(data, status, header, config){
+       $scope.getStudents();
+       $scope.message = "Delete Completed";
+     })
+   }
+
+   $scope.getStudents();
+});
+</script>
+
+</body>
+</html>
